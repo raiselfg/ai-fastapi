@@ -2,7 +2,8 @@ from openai import AsyncClient
 
 from app.schemas.ai import AiResponse
 
-class AiService():
+
+class AiService:
     def __init__(self, ai_client: AsyncClient) -> None:
         self._ai_client = ai_client
 

@@ -1,7 +1,9 @@
 from functools import lru_cache
+
 from openai import AsyncOpenAI
 
 from app.config.settings import get_settings
+
 
 @lru_cache
 def get_ai_client() -> AsyncOpenAI:
@@ -9,6 +11,6 @@ def get_ai_client() -> AsyncOpenAI:
 
     return AsyncOpenAI(
         api_key=settings.ai_api_token,
-        base_url=settings.ai_url,
+        base_url=settings.ai_base_url,
         timeout=20.0,
     )
