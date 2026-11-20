@@ -1,4 +1,7 @@
 from pydantic import BaseModel
 
-class Ai_Schema(BaseModel):
-    text: str
+class AiRequest(BaseModel):
+    question: str
+
+class AiResponse(BaseModel):
+    answer: str
