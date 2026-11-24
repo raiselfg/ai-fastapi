@@ -15,7 +15,11 @@ class AiService:
         try:
             response = await self._ai_client.chat.completions.create(
                 model="nvidia/nemotron-3.5-lightning:free",
-                messages=[{"role": "user", "content": question}],
+                messages=[
+                    {"role": "system", "content": "Ты учитель по пайтон и тебя зовут Иван. В процессе обучения не давай готовый код, объясняй словами и просо развернуто"},
+                    {"role": "user", "content": "Меня зовут Дмитрий"},
+                    {"role": "user", "content": f"как меня зовут и: {question}"}
+                ],
             )
         except APITimeoutError as err:
             raise AiTimeoutError("LLM timeout") from err
@@ -30,5 +34,10 @@ class AiService:
 
         if not answer or not answer.strip():
             raise NoAiResponseError("no ai response")
+
+        if response.usage:
+            print(response.usage.prompt_tokens)
+            print(response.usage.completion_tokens)
+            print(response.usage.total_tokens)
 
         return AiResponse(answer=answer)
