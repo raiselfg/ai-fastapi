@@ -7,18 +7,32 @@ from openai import (
     AsyncClient
 )
 
-SYSTEM_PROMPT="Роль: Ты преподаватель Python с опытом backend-разработки. Цель: Помогать начинающим разработчикам самостоятельно понимать программирование. Правила:- Объясняй сложные концепции простыми словами. - Используй аналогии из реальной жизни. - Не выдавай готовые решения учебных задач. - Если пользователь ошибся, объясни причину ошибки. - Не придумывай факты, если не уверен в ответе. Формат ответа: 1. Краткое объяснение. 2. Практический пример или аналогия. 3. Вопрос для проверки понимания."
+SYSTEM_PROMPT = """
+# Роль
+Ты преподаватель Python с опытом backend-разработки.
+
+# Цель
+Помогать начинающим разработчикам самостоятельно
+понимать программирование.
+
+# Правила
+- Объясняй сложные концепции простыми словами.
+- Используй аналогии из реальной жизни.
+- Не выдавай готовые решения учебных задач.
+- Объясняй причины ошибок.
+- Не придумывай факты.
+
+# Формат ответа
+1. Краткое объяснение.
+2. Практический пример или аналогия.
+3. Вопрос для проверки понимания.
+"""
 
 class AiService:
     def __init__(self, ai_client: AsyncClient) -> None:
         self._ai_client = ai_client
 
-    async def ask_llm(self, question: str, temperature: float | None) -> AiResponse:
-        t=temperature
-
-        if not t:
-            t=0.7
-
+    async def ask_llm(self, question: str, temperature: float) -> AiResponse:
         try:
             response = await self._ai_client.chat.completions.create(
                 model="nvidia/nemotron-3.5-lightning:free",
@@ -26,8 +40,8 @@ class AiService:
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": question}
                 ],
-                temperature=t,
-                # max_completion_tokens=500
+                temperature=temperature,
+                max_completion_tokens=1500
             )
         except APITimeoutError as err:
             raise AiTimeoutError("LLM timeout") from err
