@@ -1,3 +1,4 @@
+from app.exceptions.ai import AiProviderError, AiTimeoutError, NoAiResponseError
 from app.schemas.ai import AiResponse
 from openai import (
     APITimeoutError,
@@ -5,15 +6,6 @@ from openai import (
     APIStatusError,
     AsyncClient
 )
-
-class AiTimeoutError(Exception):
-    pass
-
-class AiProviderError(Exception):
-    pass
-
-class NoAiResponseError(Exception):
-    pass
 
 class AiService:
     def __init__(self, ai_client: AsyncClient) -> None:
