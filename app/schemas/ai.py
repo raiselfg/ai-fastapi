@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, StringConstraints
 
@@ -11,4 +11,12 @@ class AiRequest(BaseModel):
 
 
 class AiResponse(BaseModel):
-    answer: str
+    topic: str
+    explanation: str
+    example: str
+    difficulty: Literal[
+        "beginner", "intermediate", "advanced"
+    ]
+    key_concepts: list[str]
+    control_question: str
+    

@@ -29,19 +29,24 @@ SYSTEM_PROMPT = """
 """
 
 class AiService:
-    def __init__(self, ai_client: AsyncClient) -> None:
+    def __init__(self, ai_client: AsyncClient):
         self._ai_client = ai_client
 
     async def ask_llm(self, question: str, temperature: float) -> AiResponse:
         try:
-            response = await self._ai_client.chat.completions.create(
-                model="nvidia/nemotron-3.5-lightning:free",
+            response = await self._ai_client.chat.completions.parse(
+                model="openrouter/free",
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": question}
                 ],
                 temperature=temperature,
-                max_completion_tokens=1500
+                response_format=AiResponse,
+                extra_body={
+                    "provider": {
+                        "require_parameters": True
+                    }
+                }
             )
         except APITimeoutError as err:
             raise AiTimeoutError("LLM timeout") from err
@@ -52,14 +57,12 @@ class AiService:
         except APIStatusError as err:
             raise AiProviderError("Provider returned an error") from err
         
-        answer = response.choices[0].message.content
+        answer = response.choices[0].message.parsed
 
-        if not answer or not answer.strip():
-            raise NoAiResponseError("no ai response")
+        if not answer:
+            raise NoAiResponseError("No Ai response")
 
-        if response.usage:
-            print(response.usage.prompt_tokens)
-            print(response.usage.completion_tokens)
-            print(response.usage.total_tokens)
-
-        return AiResponse(answer=answer)
+        if response.model:
+            print(response.model)
+        
+        return answer
