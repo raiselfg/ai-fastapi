@@ -1,15 +1,19 @@
-from openai import AsyncClient
-
 from app.schemas.ai import AiResponse
+from openai import (
+    APITimeoutError,
+    APIConnectionError,
+    APIStatusError,
+    AsyncClient
+)
 
+class AiTimeoutError(Exception):
+    pass
+
+class AiProviderError(Exception):
+    pass
 
 class NoAiResponseError(Exception):
     pass
-
-
-class NetworkAiNetworkError(Exception):
-    pass
-
 
 class AiService:
     def __init__(self, ai_client: AsyncClient) -> None:
@@ -21,11 +25,18 @@ class AiService:
                 model="nvidia/nemotron-3.5-lightning:free",
                 messages=[{"role": "user", "content": question}],
             )
-            answer = response.choices[0].message.content
+        except APITimeoutError as err:
+            raise AiTimeoutError("LLM timeout") from err
 
-            if answer is None:
-                raise NoAiResponseError("no ai response")
+        except APIConnectionError as err:
+            raise AiProviderError("Connection failed") from err
 
-            return AiResponse(answer=answer)
-        except Exception as err:
-            raise NetworkAiNetworkError("network error") from err
+        except APIStatusError as err:
+            raise AiProviderError("Provider returned an error") from err
+        
+        answer = response.choices[0].message.content
+
+        if not answer or not answer.strip():
+            raise NoAiResponseError("no ai response")
+
+        return AiResponse(answer=answer)
